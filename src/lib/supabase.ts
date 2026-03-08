@@ -1,14 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Estas variables se sacan de las Environment Variables de Vercel
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+// Reemplaza esto con tu URL de Supabase (la que termina en .supabase.co)
+// Si no la tienes a mano, búscala en tu Dashboard de Supabase -> Project Settings -> API
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://uqkwfmgmzivbefyanpiu.supabase.co'; 
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('⚠️ ERROR: Faltan las variables de entorno de Supabase.');
+if (!supabaseAnonKey) {
+  console.error('⚠️ ERROR: No se detecta la VITE_SUPABASE_ANON_KEY en las variables de entorno.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey || '');
 
-// Email del administrador para control de acceso
-export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || '';
+// Tu email de administrador
+export const ADMIN_EMAIL = 'ezehcontactooficial@gmail.com';
