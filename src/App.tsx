@@ -1,23 +1,24 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ShieldAlert, Home, Loader2 } from 'lucide-react';
-import { supabase, ADMIN_EMAIL } from './lib/supabase';
-import { User } from './types';
-
-// IMPORTACIONES CORREGIDAS (Asegúrate de que los nombres de archivo coincidan exactamente)
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
-import UpdatePassword from './pages/UpdatePassword';
+import { User } from './types';
+import { supabase, ADMIN_EMAIL } from './lib/supabase';
+import { ShieldAlert, Home, Loader2 } from 'lucide-react';
 
-// HACK SUPREMO: Importación dinámica para evitar que el build se rompa si el archivo falta físicamente
+// Importación dinámica para evitar errores si el archivo no existe en el commit inicial
 const AdminPage = lazy(() => import('./pages/AdminPage').catch(() => ({ 
   default: () => (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
-      <ShieldAlert size={50} className="text-yellow-500 mb-4" />
-      <h2 className="text-xl font-black">MÓDULO ADMIN NO ENCONTRADO</h2>
-      <p className="text-gray-500 text-sm">Verifica que el archivo src/pages/AdminPage.tsx exista.</p>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
+      <ShieldAlert size={48} className="text-red-600 mb-4" />
+      <h1 className="text-xl font-black">ARCHIVO ADMINPAGE.TSX NO DETECTADO</h1>
+      <p className="text-zinc-500 text-sm">Sube el archivo a src/pages/AdminPage.tsx para activar este módulo.</p>
     </div>
   ) 
+})));
+
+const UpdatePassword = lazy(() => import('./pages/UpdatePassword').catch(() => ({ 
+  default: () => <div className="min-h-screen bg-black" /> 
 })));
 
 const App: React.FC = () => {
@@ -34,7 +35,7 @@ const App: React.FC = () => {
       }
     });
 
-    // 2. Escuchar cambios de estado
+    // 2. Escuchar cambios de estado (Login, Logout, Auto-refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         mapSupabaseUser(session.user);
@@ -59,12 +60,17 @@ const App: React.FC = () => {
     setLoading(false);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-12 h-12 text-red-600 animate-spin" />
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Iniciando Protocolo EZEH</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 italic">Iniciando Protocolo EZEH</span>
         </div>
       </div>
     );
@@ -76,9 +82,9 @@ const App: React.FC = () => {
         <ShieldAlert size={40} className="text-red-600" />
       </div>
       <h1 className="text-3xl font-black mb-4 uppercase italic text-white">ACCESO DENEGADO</h1>
-      <p className="text-gray-500 max-w-md mb-8 text-sm font-medium">No tienes privilegios de administrador.</p>
+      <p className="text-gray-500 max-w-md mb-8 text-sm font-medium">No tienes privilegios de administrador para esta sección.</p>
       <a href="/" className="bg-white text-black px-8 py-4 rounded-2xl font-black uppercase text-xs hover:bg-red-600 hover:text-white transition-all inline-flex items-center">
-        <Home size={18} className="mr-2"/> Ir al Inicio
+        <Home size={18} className="mr-2"/> Volver al Panel
       </a>
     </div>
   );
@@ -88,11 +94,12 @@ const App: React.FC = () => {
       <Suspense fallback={<div className="bg-black min-h-screen" />}>
         <Routes>
           <Route path="/update-password" element={<UpdatePassword />} />
+          
           <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
           
           <Route 
             path="/dashboard" 
-            element={user ? <Dashboard user={user} onLogout={() => supabase.auth.signOut()} /> : <Navigate to="/login" replace />} 
+            element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" replace />} 
           />
           
           <Route 
