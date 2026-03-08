@@ -1,20 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-// FORZAMOS LA URL DIRECTAMENTE (Sin depender de variables de entorno para la URL)
 const supabaseUrl = 'https://uqkwfmgmzivbefyanpiu.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxa3dmbWdteml2YmVmeWFucGl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NzUwNzYsImV4cCI6MjA3OTM1MTA3Nn0.MB0OmqtxrQhf160YJ5c8zry3Ezcfrv-mkddiu36Pwrs';
 
-// La Key sí la mantenemos de Vercel por seguridad, o puedes pegarla aquí si quieres probar rápido
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true, // Mantener sesión iniciada
+    autoRefreshToken: true,
+  }
+});
 
-if (!supabaseAnonKey) {
-  console.error('⚠️ ERROR CRÍTICO: No se encontró VITE_SUPABASE_ANON_KEY en Vercel.');
-}
-
-// Creamos el cliente con una validación simple para que no rompa la App
-export const supabase = createClient(
-  supabaseUrl, 
-  supabaseAnonKey || 'SIN_KEY_DETECTADA' 
-);
-
-// Tu email de administrador
 export const ADMIN_EMAIL = 'ezehcontactooficial@gmail.com';
